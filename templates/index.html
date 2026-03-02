@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>✨ ISL Recognition Dashboard ✨</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script>
+    function startPrediction() {
+      fetch("/start").then(() => updateStatus("🟢 Prediction Running", "running"));
+    }
+    function stopPrediction() {
+      fetch("/stop").then(() => updateStatus("🔴 Prediction Stopped", "stopped"));
+    }
+    function exitApp() {
+      fetch("/exit").then(() => updateStatus("⚫ Exited", "exit"));
+    }
+    function updateStatus(msg, mode) {
+      let status = document.getElementById("status");
+      status.innerText = msg;
+      status.className = "";
+      status.classList.add(mode);
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>🖐 Indian Sign Language Recognition</h1>
+    <p>Control real-time gesture recognition with the buttons below</p>
+
+    <div class="video-box">
+      <img src="{{ url_for('video_feed') }}" width="720" />
+    </div>
+
+    <h2 id="status" class="stopped">🔴 Prediction Stopped</h2>
+
+    <div class="btn-group">
+      <button class="btn start" onclick="startPrediction()">▶ Start Prediction</button>
+      <button class="btn stop" onclick="stopPrediction()">⏹ Stop Prediction</button>
+      <button class="btn exit" onclick="exitApp()">❌ Exit</button>
+    </div>
+
+    <!-- Learn ISL Section -->
+    <div class="learn-section">
+      <h2>📚 Learn Indian Sign Language (ISL)</h2>
+      <div class="card-container">
+        
+        <!-- Card 1 -->
+        <div class="card">
+          <a href="https://www.youtube.com/playlist?list=PLxYMaKXKMMcMgg4f47WkG7AM0bb3AyjTi" target="_blank" class="thumbnail">
+            <img src="{{ url_for('static', filename='images/isl_basics_thumb.jpg') }}" alt="ISL Basics">
+            <span class="play-button">▶</span>
+          </a>
+          <div class="card-body">
+            <h4>ISL Basics</h4>
+            <p>Learn the ISL alphabet and numbers.</p>
+            <a href="https://www.youtube.com/playlist?list=PLxYMaKXKMMcMgg4f47WkG7AM0bb3AyjTi" target="_blank">Watch on YouTube</a>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card">
+          <a href="https://www.youtube.com/playlist?list=PLFjydPMg4DapfRTBMokl09Ht-fhMOAYf6" target="_blank" class="thumbnail">
+            <img src="{{ url_for('static', filename='images/isl_lessons_thumb.jpg') }}" alt="ISLRTC lessons">
+            <span class="play-button">▶</span>
+          </a>
+          <div class="card-body">
+            <h4>ISLRTC Online Lessons</h4>
+            <p>Structured lessons by ISLRTC.</p>
+            <a href="https://www.youtube.com/playlist?list=PLFjydPMg4DapfRTBMokl09Ht-fhMOAYf6" target="_blank">Watch on YouTube</a>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card">
+          <a href="https://www.youtube.com/channel/UC3AcGIlqVI4nJWCwHgHFXtg" target="_blank" class="thumbnail">
+            <img src="{{ url_for('static', filename='images/isl_channel_thumb.jpg') }}" alt="ISLRTC Channel">
+            <span class="play-button">▶</span>
+          </a>
+          <div class="card-body">
+            <h4>ISLRTC Official Channel</h4>
+            <p>Explore tutorials and awareness programs.</p>
+            <a href="https://www.youtube.com/channel/UC3AcGIlqVI4nJWCwHgHFXtg" target="_blank">Visit Channel</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
