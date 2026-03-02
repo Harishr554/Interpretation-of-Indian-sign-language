@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ISL Recognition Dashboard</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #0a0a0f 0%, #16213e 50%, #0f3460 100%);
+        color: white;
+        min-height: 100vh;
+    }
+    
+    /* Navigation Bar */
+    .navbar {
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid rgba(76, 175, 80, 0.3);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    
+    .navbar h1 {
+        font-size: 1.8rem;
+        text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+    }
+    
+    .nav-links {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+    
+    .nav-link {
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+    
+    .nav-link:hover, .nav-link.active {
+        background: #4CAF50;
+        transform: translateY(-2px);
+    }
+    
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 30px 20px;
+    }
+    
+    /* Home Page */
+    .home-page {
+        display: block;
+    }
+    
+    .page {
+        display: none;
+    }
+    
+    .page.active {
+        display: block;
+    }
+    
+    .video-section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 30px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    
+    .video-wrapper {
+        border: 2px solid #4CAF50;
+        border-radius: 12px;
+        overflow: hidden;
+        display: inline-block;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+        margin-bottom: 20px;
+    }
+    
+    .video-feed {
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        display: block;
+    }
+    
+    #predicted-text-box {
+        margin-top: 1rem;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #4CAF50;
+        text-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+        min-height: 40px;
+    }
+    
+    .control-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+    
+    .control-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .control-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .start-btn { background: #4CAF50; }
+    .stop-btn { background: #ff9800; }
+    .exit-btn { background: #e74c3c; }
+    
+    .tts-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 10px 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+    
+    .tts-toggle input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    /* YouTube Links Section */
+    .youtube-section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 30px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 40px;
+    }
+    
+    .youtube-section h2 {
+        margin-bottom: 20px;
+        color: #4CAF50;
+        text-align: center;
+    }
+    
+    .youtube-links {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    
+    .youtube-link {
+        display: block;
+        text-decoration: none;
+        color: white;
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid transparent;
+    }
+    
+    .youtube-link:hover {
+        border-color: #4CAF50;
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+    }
+    
+    .youtube-thumbnail {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%; /* 16:9 aspect ratio */
+        overflow: hidden;
+        background: #000;
+    }
+    
+    .youtube-thumbnail img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .youtube-play-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 0, 0, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .youtube-link:hover .youtube-play-button {
+        background: rgba(255, 0, 0, 1);
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    
+    .youtube-play-button::after {
+        content: '';
+        width: 0;
+        height: 0;
+        border-left: 20px solid white;
+        border-top: 12px solid transparent;
+        border-bottom: 12px solid transparent;
+        margin-left: 4px;
+    }
+    
+    .youtube-link-info {
+        padding: 15px;
+    }
+    
+    .youtube-link-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .youtube-link-desc {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+    
+    /* Help Page */
+    .help-page {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 30px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .help-category {
+        margin-bottom: 40px;
+    }
+    
+    .help-category h2 {
+        color: #4CAF50;
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+        border-bottom: 2px solid #4CAF50;
+        padding-bottom: 10px;
+    }
+    
+    .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .image-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .image-card:hover {
+        border-color: #4CAF50;
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+    }
+    
+    .image-card {
+        cursor: pointer;
+    }
+    
+    .image-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease;
+    }
+    
+    .image-card:hover img {
+        transform: scale(1.05);
+    }
+    
+    .image-card .image-label {
+        display: none;
+    }
+    
+    /* Lightbox/Modal for Images */
+    .image-lightbox {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.95);
+        backdrop-filter: blur(10px);
+        overflow: auto;
+    }
+    
+    .image-lightbox.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .lightbox-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90vh;
+        margin: auto;
+        text-align: center;
+    }
+    
+    .lightbox-image {
+        max-width: 100%;
+        max-height: 85vh;
+        object-fit: contain;
+        border-radius: 10px;
+        box-shadow: 0 0 30px rgba(76, 175, 80, 0.5);
+        transition: transform 0.3s ease;
+    }
+    
+    .lightbox-label {
+        display: none;
+    }
+    
+    .lightbox-close {
+        position: absolute;
+        top: 20px;
+        right: 40px;
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 2001;
+        background: rgba(0, 0, 0, 0.5);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .lightbox-close:hover {
+        background: rgba(255, 0, 0, 0.8);
+        transform: rotate(90deg);
+    }
+    
+    
+    .empty-gallery {
+        text-align: center;
+        padding: 60px 20px;
+        opacity: 0.7;
+        font-style: italic;
+        font-size: 1.1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+    }
+    
+</style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <h1>🖐 ISL Recognition</h1>
+        <div class="nav-links">
+            <a href="#" class="nav-link active" onclick="showPage('home')">Home</a>
+            <a href="#" class="nav-link" onclick="showPage('help')">Help</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- Home Page -->
+        <div id="homePage" class="page active">
+            <div class="video-section">
+                <h2 style="margin-bottom: 20px;">Live Camera Feed</h2>
+                <div class="video-wrapper">
+                    <img src="/video_feed" alt="Video Feed" class="video-feed">
+                </div>
+                
+                <div id="predicted-text-box">Waiting for prediction...</div>
+                
+                <div class="control-buttons">
+                    <button class="control-btn start-btn" onclick="startPrediction()">Start</button>
+                    <button class="control-btn stop-btn" onclick="stopPrediction()">Stop</button>
+                    <button class="control-btn exit-btn" onclick="exitApp()">Exit</button>
+                    <div class="tts-toggle">
+                        <input type="checkbox" id="ttsToggle" onchange="toggleTTS(this.checked)">
+                        <label for="ttsToggle">Text-to-Speech</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- YouTube Links Section -->
+            <!-- 
+                TO EDIT YOUTUBE VIDEOS:
+                1. Get the video ID from YouTube URL (e.g., from https://www.youtube.com/watch?v=ABC123xyz, the ID is ABC123xyz)
+                2. Replace VIDEO_ID_1, VIDEO_ID_2, VIDEO_ID_3, VIDEO_ID_4 with your actual video IDs in THREE places for each:
+                   - In the href URL: href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID"
+                   - In the thumbnail img src: src="https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg"
+                   - In the onerror fallback: onerror="this.src='https://img.youtube.com/vi/YOUR_VIDEO_ID/hqdefault.jpg'"
+                3. You can also edit the title and description text
+                
+                Example: If your video URL is https://www.youtube.com/watch?v=jNQXAC9IVRw
+                Replace VIDEO_ID_1 with jNQXAC9IVRw in all three places for Video 1
+            -->
+            <div class="youtube-section">
+                <h2>📺 Learning Resources</h2>
+                <div class="youtube-links">
+                    <!-- Popular ISL YouTube Videos -->
+                    <a href="https://youtu.be/qcdivQfA41Y?si=RxfUU3Vv85EUG-Fo" target="_blank" class="youtube-link">
+                        <div class="youtube-thumbnail">
+                            <img src="https://img.youtube.com/vi/qcdivQfA41Y/maxresdefault.jpg" alt="ISL Tutorial" onerror="this.src='https://img.youtube.com/vi/qcdivQfA41Y/hqdefault.jpg'">
+                            <div class="youtube-play-button"></div>
+                        </div>
+                        <div class="youtube-link-info">
+                            <div class="youtube-link-title">ISL Complete Tutorial</div>
+                            <div class="youtube-link-desc">Learn Indian Sign Language from basics</div>
+                        </div>
+                    </a>
+                    
+                    <a href="https://youtu.be/vnH2BmcSRMA?si=68okPc2jdCnqpdBe" target="_blank" class="youtube-link">
+                        <div class="youtube-thumbnail">
+                            <img src="https://img.youtube.com/vi/vnH2BmcSRMA/maxresdefault.jpg" alt="ISL Alphabet" onerror="this.src='https://img.youtube.com/vi/vnH2BmcSRMA/hqdefault.jpg'">
+                            <div class="youtube-play-button"></div>
+                        </div>
+                        <div class="youtube-link-info">
+                            <div class="youtube-link-title">ISL Alphabet A-Z</div>
+                            <div class="youtube-link-desc">Learn sign language alphabets</div>
+                        </div>
+                    </a>
+                    
+                    <a href="https://youtu.be/VtbYvVDItvg?si=LXjXLCA1awgM6sGF" target="_blank" class="youtube-link">
+                        <div class="youtube-thumbnail">
+                            <img src="https://img.youtube.com/vi/VtbYvVDItvg/maxresdefault.jpg" alt="ISL Numbers" onerror="this.src='https://img.youtube.com/vi/VtbYvVDItvg/hqdefault.jpg'">
+                            <div class="youtube-play-button"></div>
+                        </div>
+                        <div class="youtube-link-info">
+                            <div class="youtube-link-title">ISL Numbers 0-9</div>
+                            <div class="youtube-link-desc">Learn sign language numbers</div>
+                        </div>
+                    </a>
+                    
+                    <a href="https://youtu.be/5vHmvYA8Z6Q?si=vdRoYLBQv4OdyuhC" target="_blank" class="youtube-link">
+                        <div class="youtube-thumbnail">
+                            <img src="https://img.youtube.com/vi/5vHmvYA8Z6Q/maxresdefault.jpg" alt="Common ISL Words" onerror="this.src='https://img.youtube.com/vi/5vHmvYA8Z6Q/hqdefault.jpg'">
+                            <div class="youtube-play-button"></div>
+                        </div>
+                        <div class="youtube-link-info">
+                            <div class="youtube-link-title">Common ISL Words</div>
+                            <div class="youtube-link-desc">Learn everyday sign language words</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Help Page -->
+        <div id="helpPage" class="page">
+            <div class="help-page">
+                <h1 style="margin-bottom: 30px; text-align: center; color: #4CAF50;">📚 ISL Reference Guide</h1>
+                
+                <!-- Numbers Section -->
+                <div class="help-category">
+                    <h2>🔢 Numbers (0-9)</h2>
+                    <div class="image-gallery" id="numbersGallery">
+                        <div class="empty-gallery">Loading images...</div>
+                    </div>
+                </div>
+                
+                <!-- Alphabets Section -->
+                <div class="help-category">
+                    <h2>🔤 Alphabets (A-Z)</h2>
+                    <div class="image-gallery" id="alphabetsGallery">
+                        <div class="empty-gallery">Loading images...</div>
+                    </div>
+                </div>
+                
+                <!-- Simple Words Section -->
+                <div class="help-category">
+                    <h2>💬 Simple Words for Communication</h2>
+                    <div class="image-gallery" id="wordsGallery">
+                        <div class="empty-gallery">Loading images...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image Lightbox/Modal -->
+    <div id="imageLightbox" class="image-lightbox" onclick="closeLightbox(event)">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <img id="lightboxImage" class="lightbox-image" src="" alt="">
+            <div id="lightboxLabel" class="lightbox-label"></div>
+        </div>
+    </div>
+    
+<script>
+let ttsEnabled = false;
+let lastSpoken = "";
+
+// Page Navigation
+function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    
+    if (page === 'home') {
+        document.getElementById('homePage').classList.add('active');
+        document.querySelectorAll('.nav-link')[0].classList.add('active');
+    } else if (page === 'help') {
+        document.getElementById('helpPage').classList.add('active');
+        document.querySelectorAll('.nav-link')[1].classList.add('active');
+        loadHelpImages();
+    }
+}
+
+
+async function loadHelpImages() {
+    const categories = ['numbers', 'alphabets', 'words'];
+    
+    for (const category of categories) {
+        try {
+            const response = await fetch(`/api/images/${category}`);
+            const data = await response.json();
+            displayImages(category, data.images || []);
+        } catch (error) {
+            console.error(`Error loading ${category}:`, error);
+            displayImages(category, []);
+        }
+    }
+}
+
+function displayImages(category, images) {
+    const gallery = document.getElementById(`${category}Gallery`);
+    
+    if (images.length === 0) {
+        gallery.innerHTML = '<div class="empty-gallery">No images available</div>';
+        return;
+    }
+    
+    gallery.innerHTML = images.map(img => {
+        const imagePath = `/static/help_images/${category}/${img.filename}`;
+        return `
+            <div class="image-card" onclick="openLightbox('${imagePath}', '${img.label.replace(/'/g, "\\'")}')">
+                <img src="${imagePath}" alt="${img.label}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23333%22 width=%22200%22 height=%22200%22/%3E%3Ctext fill=%22%23999%22 font-family=%22sans-serif%22 font-size=%2214%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22%3EImage not found%3C/text%3E%3C/svg%3E'">
+            </div>
+        `;
+    }).join('');
+}
+
+// Lightbox Functions
+function openLightbox(imageSrc, label) {
+    const lightbox = document.getElementById('imageLightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxLabel = document.getElementById('lightboxLabel');
+    
+    lightboxImage.src = imageSrc;
+    lightboxLabel.textContent = label;
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closeLightbox(event) {
+    // Only close if clicking on the background, not the image
+    if (event && event.target.id === 'imageLightbox') {
+        const lightbox = document.getElementById('imageLightbox');
+        lightbox.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    } else if (!event) {
+        // Called from close button
+        const lightbox = document.getElementById('imageLightbox');
+        lightbox.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Close lightbox on Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const lightbox = document.getElementById('imageLightbox');
+        if (lightbox.classList.contains('active')) {
+            closeLightbox();
+        }
+    }
+});
+
+// TTS Functions
+function speakText(text) {
+    if (!('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.0;
+    u.pitch = 1.0;
+    u.volume = 1.0;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+}
+
+function toggleTTS(enabled) {
+    ttsEnabled = enabled;
+    if (!enabled) {
+        speechSynthesis.cancel();
+        return;
+    }
+}
+
+// Prediction Functions
+async function pollPrediction() {
+    try {
+        const res = await fetch('/latest_label');
+        const data = await res.json();
+        const label = data && data.label ? String(data.label).trim() : "";
+        const box = document.getElementById("predicted-text-box");
+        if (label) {
+            box.textContent = `Prediction: ${label.toUpperCase()}`;
+            if (ttsEnabled && label !== lastSpoken) {
+                speakText(label);
+                lastSpoken = label;
+            }
+        } else {
+            box.textContent = "Waiting for prediction...";
+        }
+    } catch(e) {
+        console.warn(e);
+    }
+}
+
+setInterval(pollPrediction, 700);
+
+function startPrediction() {
+    fetch('/start').then(r => r.json()).then(() => console.log("Started"));
+}
+
+function stopPrediction() {
+    fetch('/stop').then(r => r.json()).then(() => console.log("Stopped"));
+}
+
+function exitApp() {
+    if (confirm('Are you sure you want to exit?')) {
+        fetch('/exit');
+    }
+}
+
+// Initialize
+loadHelpImages();
+</script>
+</body>
+</html>
